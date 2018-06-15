@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<style>
+  body {
+    position: relative;
+  }
+
+  .img {
+    display: inline-block;
+    position: absolute;
+    left: 199px;
+    top: 101px;
+    z-index: 1;
+  }
+
+  #myCanvas {
+    z-index: 2;
+    position: absolute;
+  }
+</style>
+
+<body>
+  <img class="img" src="./test2.png" alt="">
+  <canvas id="myCanvas" class="myCanvas" width="70" height="150">浏览器不支持canvas</canvas>
+
+  <script>
+    var canvas = document.querySelector(".myCanvas");
+    var ctx = canvas.getContext("2d");
+    var image = new Image();
+    image.src = './test.png';
+    var currenXY = [] // 记录位置
+    var pixels = []; //存储像素数据
+    var imageData;
+    var polyfillAnimFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame;
+    let TIMER = 50
+    image.onload = function () {
+      ctx.drawImage(image, 0, 0);
+      imageData = ctx.getImageData(0, 0, 70, 150); //获取图表像素信息
+      getPixels(); //获取所有像素
+      // // drawPic(); //绘制图像
+      if (TIMER > 0) {
+        polyfillAnimFrame(drawPic)
+      }
+      // setInterval(() => {
+      //   drawPic(); //绘制图像
+      //   time --
+      // }, 20)
+    };
+    function getPixels() {
+      var pos = 0;
+      var data = imageData.data; //RGBA的一维数组数据
+      //源图像的高度和宽度为200px
+      for (var i = 1; i <= 70; i++) {
+        for (var j = 1; j <= 150; j++) {
+          pos = [(i - 1) * 70 + (j - 1)] * 4; //取得像素位置
+          if (data[pos] >= 2) {
+            var pixel = {
+              x: j, //重新设置每个像素的位置信息
+              y: i, //重新设置每个像素的位置信息
+              // fillStyle: 'rgba(' + data[pos] + ',' + (data[pos + 1]) + ',' + (data[pos + 2]) + ',' + (data[pos + 3]) + ')'
+              fillStyle: 'rgba(' + 255 + ',' + 171 + ',' + 14 + ',' + (data[pos + 3]) + ')',
+              opacity: 1
+            }
+            pixels.push(pixel);
+          }
+        }
+      }
+    }
+    function drawPic() {
+      ctx.clearRect(0, 0, 600, 400);
+      for (var i = 0; i < pixels.length; i++) {
+        pixels[i].x = pixels[i].x + (Math.random() - Math.random()) * 5
+        pixels[i].y = pixels[i].y - 4 * Math.random();
+        pixels[i].opacity -= 0.05 * Math.random();
+        pixels[i].fillStyle = `rgba(255,171 ,14 ,${pixels[i].opacity})`
+      }
+      var len = pixels.length, curr_pixel = null;
+      for (var i = 0; i < len; i++) {
+        curr_pixel = pixels[i];
+        ctx.fillStyle = curr_pixel.fillStyle;
+        ctx.fillRect(curr_pixel.x, curr_pixel.y, 1, 1);
+      }
+      if (--TIMER > 0) {
+        polyfillAnimFrame(drawPic);
+      }
+    }
+  </script>
+</body>
+
+</html>
